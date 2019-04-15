@@ -1,0 +1,51 @@
+#
+# Keyspace Name
+#
+specname: videos
+keyspace: killr_video
+keyspace_definition: |
+  CREATE KEYSPACE killr_video WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'};
+
+
+#
+# Table name and create CQL
+#
+table: videos
+table_definition: |
+  CREATE TABLE videos(
+    name TEXT,
+    description TEXT,
+    video_id UUID,
+    PRIMARY KEY ((video_id))
+  )
+
+
+#
+# Meta information for generating data
+#
+columnspec:
+  - name: name
+    size: gaussian(8..30)
+    population: exp(1..1000000)
+  - name: description
+    size: exp(30..100)
+    population: uniform(1..1000000)
+  - name: video_id
+    size: fixed(4)
+    population: uniform(1..1000000)
+
+#
+# Specs for insert queries
+#
+insert:
+  partitions: fixed(1)
+  batchtype: UNLOGGED       # use unlogged batches
+  select: fixed(1)/1
+
+#
+# Read queries to run against the schema
+#
+queries:
+   video_by_id:
+      cql: select * from videos where video_id = ?
+      fields: samerow

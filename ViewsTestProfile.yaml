@@ -1,0 +1,50 @@
+#
+# Keyspace Name
+#
+specname: views
+keyspace: killr_video
+keyspace_definition: |
+  CREATE KEYSPACE killr_video WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'};
+
+
+#
+# Table name and create CQL
+#
+table: views
+table_definition: |
+  CREATE TABLE views(
+    video_id UUID,
+    user_id UUID,
+    viewTS timestamp,
+    startSecond int,
+    viewDuration int,
+    PRIMARY KEY ((user_id),video_id,viewTS)
+  )
+
+
+#
+# Meta information for generating data
+#
+columnspec:
+  - name: video_id
+    size: fixed(4)
+    population: exp(1..1000000)
+  - name: user_id
+    size: fixed(4)
+    population: exp(1..1M)
+  - name: viewTS
+  - name: startSecond
+    size: fixed(4)
+    population: uniform(1..1000000)
+
+#
+# Specs for insert queries
+#
+insert:
+  partitions: fixed(1)
+  batchtype: UNLOGGED       # use unlogged batches
+  select: fixed(1)/1
+
+queries:
+   views_by_user:
+      cql: Select * from views where user_id = ?
